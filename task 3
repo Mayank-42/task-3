@@ -1,0 +1,170 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.io.*;
+
+public class InventoryManagementSystem {
+
+    static class Product {
+        String name;
+        int quantity;
+        double price;
+
+        public Product(String name, int quantity, double price) {
+            this.name = name;
+            this.quantity = quantity;
+            this.price = price;
+        }
+
+        @Override
+        public String toString() {
+            return name + " - Quantity: " + quantity + ", Price: $" + price;
+        }
+    }
+
+    static List<Product> inventory = new ArrayList<>();
+
+    public static void displayInventory(JTextArea displayArea) {
+        displayArea.setText(""); 
+        for (Product product : inventory) {
+            displayArea.append(product.toString() + "\n");
+        }
+    }
+
+    public static Product findProduct(String name) {
+        for (Product product : inventory) {
+            if (product.name.equalsIgnoreCase(name)) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        String validUsername = "admin";
+        String validPassword = "admin123";
+
+        JFrame loginFrame = new JFrame("Login");
+        loginFrame.setLayout(new FlowLayout());
+        JLabel usernameLabel = new JLabel("Username: ");
+        JTextField usernameField = new JTextField(20);
+        JLabel passwordLabel = new JLabel("Password: ");
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton loginButton = new JButton("Login");
+
+        loginFrame.add(usernameLabel);
+        loginFrame.add(usernameField);
+        loginFrame.add(passwordLabel);
+        loginFrame.add(passwordField);
+        loginFrame.add(loginButton);
+        loginFrame.setSize(300, 150);
+        loginFrame.setVisible(true);
+
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText();
+                String password = new String(passwordField.getPassword());
+                if (username.equals(validUsername) && password.equals(validPassword)) {
+                    loginFrame.dispose();
+                    showInventoryManagementUI();
+                } else {
+                    JOptionPane.showMessageDialog(loginFrame, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }
+
+    public static void showInventoryManagementUI() {
+        JFrame mainFrame = new JFrame("Inventory Management System");
+        mainFrame.setLayout(new BorderLayout());
+
+        JTextArea inventoryArea = new JTextArea(15, 40);
+        inventoryArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(inventoryArea);
+        mainFrame.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(1, 5));
+
+        JButton addButton = new JButton("Add Product");
+        JButton editButton = new JButton("Edit Product");
+        JButton deleteButton = new JButton("Delete Product");
+        JButton generateReportButton = new JButton("Generate Report");
+        JButton viewInventoryButton = new JButton("View Inventory");
+
+        panel.add(addButton);
+        panel.add(editButton);
+        panel.add(deleteButton);
+        panel.add(generateReportButton);
+        panel.add(viewInventoryButton);
+        mainFrame.add(panel, BorderLayout.SOUTH);
+
+        viewInventoryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayInventory(inventoryArea);
+            }
+        });
+
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = JOptionPane.showInputDialog("Enter product name:");
+                int quantity = Integer.parseInt(JOptionPane.showInputDialog("Enter product quantity:"));
+                double price = Double.parseDouble(JOptionPane.showInputDialog("Enter product price:"));
+                inventory.add(new Product(name, quantity, price));
+                JOptionPane.showMessageDialog(mainFrame, "Product added successfully.");
+            }
+        });
+
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = JOptionPane.showInputDialog("Enter product name to edit:");
+                Product product = findProduct(name);
+                if (product != null) {
+                    int newQuantity = Integer.parseInt(JOptionPane.showInputDialog("Enter new quantity:"));
+                    double newPrice = Double.parseDouble(JOptionPane.showInputDialog("Enter new price:"));
+                    product.quantity = newQuantity;
+                    product.price = newPrice;
+                    JOptionPane.showMessageDialog(mainFrame, "Product updated successfully.");
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, "Product not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = JOptionPane.showInputDialog("Enter product name to delete:");
+                Product product = findProduct(name);
+                if (product != null) {
+                    inventory.remove(product);
+                    JOptionPane.showMessageDialog(mainFrame, "Product deleted successfully.");
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, "Product not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        generateReportButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StringBuilder report = new StringBuilder();
+                report.append("Low Stock Products:\n");
+                for (Product product : inventory) {
+                    if (product.quantity < 10) {
+                        report.append(product.toString()).append("\n");
+                    }
+                }
+                JOptionPane.showMessageDialog(mainFrame, report.toString(), "Low Stock Report", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        mainFrame.setSize(600, 400);
+        mainFrame.setVisible(true);
+    }
+}
